@@ -2,16 +2,20 @@
 // The inner first screen. The same component sits on the laptop, on the phone,
 // inside the Figma frames and as the real page after the zoom — so all copies match.
 import SiteNav from './SiteNav.vue'
+import XrayLens from './XrayLens.vue'
 
 defineProps({
   withNav: { type: Boolean, default: true },
   // 0..1 — red layout-grid tint, as Figma shows a selected grid
   gridTint: { type: Number, default: 0 },
+  // the x-ray lens easter egg — only on the real first screen, not the screen copies
+  xray: { type: Boolean, default: false },
 })
 </script>
 
 <template>
-  <section class="hero" :style="{ '--tint': gridTint }">
+  <section class="hero" :class="{ 'hero--xray': xray }" :style="{ '--tint': gridTint }">
+    <XrayLens v-if="xray" />
     <div class="hero__grid" aria-hidden="true">
       <span v-for="i in 12" :key="i" />
     </div>
@@ -51,6 +55,10 @@ defineProps({
   overflow: hidden;
   background: var(--paper);
   color: var(--ink);
+}
+
+.hero--xray {
+  cursor: crosshair;
 }
 
 .hero__grid,

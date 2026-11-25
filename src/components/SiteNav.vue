@@ -1,11 +1,15 @@
 <script setup>
 // One nav for the fixed header and for every copy of the page on the screens,
 // so at the end of the zoom they land on exactly the same pixels.
+import LogoMark from './LogoMark.vue'
 </script>
 
 <template>
   <nav class="site-nav">
-    <a class="site-nav__logo" href="#top">MokusM</a>
+    <a class="site-nav__logo" href="#top" aria-label="MOISEIEV — на початок">
+      <LogoMark class="site-nav__mark" />
+      <span class="site-nav__word">MOISEIEV</span>
+    </a>
     <ul class="site-nav__links">
       <li><a href="#cases">Кейси</a></li>
       <li><a href="#skills">Навички</a></li>
@@ -33,9 +37,24 @@ a {
 }
 
 .site-nav__logo {
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
+  align-self: center;
   font: 600 max(21px, 1.65cqi) / 1 var(--serif-display);
   letter-spacing: 0;
   text-transform: none;
+}
+
+.site-nav__mark {
+  width: auto;
+  height: 1.05em;
+}
+
+/* wordmark in capitals, tracked like the lettering of the old logo */
+.site-nav__word {
+  font-size: 0.82em;
+  letter-spacing: 0.14em;
 }
 
 .site-nav__links {

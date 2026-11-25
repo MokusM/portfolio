@@ -8,10 +8,11 @@ const CASES = [
 </script>
 
 <template>
-  <section id="cases" class="cases">
+  <section id="cases" class="cases" data-tone="dark">
     <header class="cases__head">
       <p class="cases__eyebrow">Кейси</p>
       <h2 class="cases__title">Що я вже зробив</h2>
+      <p class="cases__intro">Понад 60 готових проєктів з&nbsp;2016 року. Тут — ті, якими пишаюся найбільше.</p>
     </header>
     <ol class="cases__list">
       <li v-for="c in CASES" :key="c.n" class="case">
@@ -42,6 +43,13 @@ const CASES = [
 .cases__title {
   margin: 0.3em 0 0;
   font: 500 clamp(44px, 6vw, 96px) / 1 var(--serif-display);
+}
+
+.cases__intro {
+  max-width: 34em;
+  margin: 1.2em 0 0;
+  font: 400 18px / 1.55 var(--serif-text);
+  opacity: 0.75;
 }
 
 .cases__list {

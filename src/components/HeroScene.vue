@@ -7,6 +7,8 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import SiteHero from './SiteHero.vue'
 import LaptopScreen from './screens/LaptopScreen.vue'
+import SketchCanvas from './SketchCanvas.vue'
+import VideoScrub from './VideoScrub.vue'
 import { FRAME, LAPTOP, PHONE, SHEET, FOCUS, GLOW, DESIGN } from '../scene/geometry.js'
 import { quadToQuad, rectToQuad, toCss } from '../lib/homography.js'
 import { ui } from '../state.js'
@@ -72,6 +74,21 @@ const glowStyle = {
 }
 
 const screen = reactive({ layer: 0, codeT: 0, liveIn: 0 })
+// stroke-by-stroke drawing (SketchCanvas); until it is ready, or without WebGL,
+// the sketch comes in as a soft wipe down the sheet instead
+const sketch = reactive({ t: 0, visible: true, ready: false, failed: false })
+// the hand picking up the phone (VideoScrub, V3); until its frames are in, or if they
+// are missing, K2 -> K5 is a plain crossfade
+const hand = reactive({ t: 0, visible: false, ready: false, failed: false, load: false })
+function onHandReady() {
+  hand.ready = true
+  render(state.p)
+}
+
+function onSketchReady() {
+  sketch.ready = true
+  render(state.p)
+}
 const FIGMA_LAYERS = 6
 const caps = reactive({ intro: 1, chapters: CHAPTERS.map(() => 0) })
 
@@ -199,15 +216,38 @@ function render(rawP) {
   })
   stage.value.style.transform = toCss(quadToQuad(target, quad))
 
-  const mask = sketchMask(seg(p, T.sketch))
-  k2.value.style.webkitMaskImage = mask
-  k2.value.style.maskImage = mask
-  k5.value.style.opacity = seg(p, T.live)
+  const sketchT = seg(p, T.sketch)
+  if (sketch.ready && !sketch.failed && !props.reduced) {
+    // strokes drawn by the canvas; the full K2 takes over once the sketch is done
+    sketch.t = sketchT
+    sketch.visible = sketchT < 1
+    k2.value.style.webkitMaskImage = 'none'
+    k2.value.style.maskImage = 'none'
+    k2.value.style.opacity = sketchT >= 1 ? 1 : 0
+  } else {
+    const mask = sketchMask(sketchT)
+    k2.value.style.webkitMaskImage = mask
+    k2.value.style.maskImage = mask
+    k2.value.style.opacity = 1
+  }
+  const liveT = seg(p, T.live)
+  if (p > 0.3) hand.load = true
+  const handVideo = hand.ready && !hand.failed && !props.reduced
+  if (handVideo) {
+    // the video runs between the two photos: K2 before, K5 once the hand has settled
+    hand.t = liveT
+    hand.visible = liveT > 0 && liveT < 1
+    k5.value.style.opacity = liveT >= 1 ? 1 : 0
+  } else {
+    k5.value.style.opacity = liveT
+  }
 
   const wake = seg(p, T.wake)
   laptopEl.value.style.opacity = wake
   laptopEl.value.style.setProperty('--glare', 1 - zoomT)
-  phoneEl.value.style.opacity = seg(p, T.live)
+  // the phone's screen comes alive once it has settled in the hand (≈80% of V3;
+  // before that it still moves and the live page could not stay on it)
+  phoneEl.value.style.opacity = handVideo ? seg(liveT, [0.78, 0.9]) : liveT
   phoneEl.value.style.setProperty('--glare', 1 - zoomT)
 
   screen.layer = Math.min(FIGMA_LAYERS - 1, Math.floor(seg(p, T.figma) * FIGMA_LAYERS))
@@ -310,7 +350,22 @@ onBeforeUnmount(() => {
     >
       <img class="frame" :src="frameSrc('k1')" alt="" decoding="async" />
       <img ref="k2" class="frame" :src="frameSrc('k2')" alt="" decoding="async" />
+      <SketchCanvas
+        v-if="!reduced && !sketch.failed"
+        v-show="sketch.ready && sketch.visible"
+        :t="sketch.t"
+        @ready="onSketchReady"
+        @unsupported="sketch.failed = true"
+      />
       <img ref="k5" class="frame frame--k5" :src="frameSrc('k5')" alt="" decoding="async" />
+      <VideoScrub
+        v-if="!reduced && !hand.failed"
+        v-show="hand.ready && hand.visible"
+        :t="hand.t"
+        :load="hand.load"
+        @ready="onHandReady"
+        @unsupported="hand.failed = true"
+      />
       <div ref="glow" class="glow" :style="glowStyle" />
       <div ref="laptopEl" class="screen" inert>
         <LaptopScreen
@@ -332,8 +387,8 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="scene__captions">
-      <div class="cap" :style="{ opacity: caps.intro }">
-        <p class="cap__n">MokusM</p>
+      <div class="cap cap--intro" :style="{ opacity: caps.intro }">
+        <p class="cap__n">MOISEIEV</p>
         <p class="cap__title">Фронтенд-розробник</p>
         <p class="cap__text">Промо-сторінки з анімаціями. У верстці з 2016 року.</p>
         <p class="cap__hint">Гортайте — покажу, як ескіз стає сторінкою</p>
@@ -351,7 +406,7 @@ onBeforeUnmount(() => {
     </div>
 
     <div v-if="!reduced" ref="finalEl" class="scene__final">
-      <SiteHero :with-nav="false" />
+      <SiteHero :with-nav="false" xray />
     </div>
   </section>
 </template>
@@ -462,6 +517,11 @@ onBeforeUnmount(() => {
   left: 0;
   top: 0;
   max-width: min(34rem, 24vw);
+}
+
+/* the intro is on the wide shot, nothing to keep clear of */
+.cap--intro {
+  max-width: 48rem;
 }
 
 @media (orientation: portrait) {

@@ -6,7 +6,8 @@ import { ui } from '../state.js'
 <template>
   <header
     class="site-header"
-    :data-tone="ui.headerTone"
+    :class="{ 'is-solid': ui.headerSolid }"
+    :data-header-tone="ui.headerTone"
     :style="{ opacity: ui.headerOpacity, visibility: ui.headerOpacity > 0 ? 'visible' : 'hidden' }"
   >
     <SiteNav />
@@ -19,16 +20,27 @@ import { ui } from '../state.js'
   inset: 0 0 auto;
   z-index: 40;
   container-type: inline-size;
+  /* the bottom padding only matters for the solid bar; the nav's own position
+     stays exactly where the copies on the screens put it */
+  padding-bottom: 16px;
   color: var(--ink);
   pointer-events: none;
-  transition: color 0.4s ease;
+  transition: color 0.4s ease, background-color 0.4s ease;
 }
 
 .site-header :deep(a) {
   pointer-events: auto;
 }
 
-.site-header[data-tone='light'] {
+.site-header[data-header-tone='light'] {
   color: var(--paper);
+}
+
+.site-header.is-solid {
+  background-color: var(--paper);
+}
+
+.site-header.is-solid[data-header-tone='light'] {
+  background-color: var(--ink);
 }
 </style>

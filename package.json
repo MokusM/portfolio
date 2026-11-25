@@ -1,5 +1,5 @@
 {
-  "name": "mokusm-portfolio",
+  "name": "moiseiev-portfolio",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "frames": "node scripts/build-frames.mjs",
+    "sketch": "node scripts/build-sketch.mjs",
     "measure": "node scripts/measure-screen.mjs"
   },
   "dependencies": {

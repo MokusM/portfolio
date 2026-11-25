@@ -10,22 +10,36 @@ import { ui, reducedMotion } from './state.js'
 // Calm version: no pinning or zoom — a still of the desk, then the page.
 const reduced = reducedMotion
 
-function onScroll() {
-  ui.headerTone = window.scrollY > window.innerHeight * 0.85 ? 'dark' : 'light'
+// The header takes the tone of the section under it: data-tone="dark" means dark
+// text (paper sections), "light" — light text (dark sections). The scroll scene has
+// no data-tone and sets the tone itself while it plays.
+function syncTone() {
+  const hit = document
+    .elementsFromPoint(window.innerWidth / 2, 32)
+    .map((el) => el.closest('[data-tone]'))
+    .find(Boolean)
+  if (hit) ui.headerTone = hit.dataset.tone
+  // over the photo (data-clear) the header stays transparent
+  ui.headerSolid = Boolean(hit) && !hit.hasAttribute('data-clear')
 }
 
 onMounted(() => {
-  if (reduced) window.addEventListener('scroll', onScroll, { passive: true })
+  window.addEventListener('scroll', syncTone, { passive: true })
+  syncTone()
 })
-onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
+onBeforeUnmount(() => window.removeEventListener('scroll', syncTone))
 </script>
 
 <template>
   <SiteHeader />
   <main id="top">
-    <HeroScene :reduced="reduced" />
-    <section v-if="reduced" class="static-hero">
-      <SiteHero :with-nav="false" />
+    <HeroScene
+      :reduced="reduced"
+      :data-tone="reduced ? 'light' : null"
+      :data-clear="reduced ? '' : null"
+    />
+    <section v-if="reduced" class="static-hero" data-tone="dark">
+      <SiteHero :with-nav="false" xray />
     </section>
     <CasesSection />
     <ContactSection />
