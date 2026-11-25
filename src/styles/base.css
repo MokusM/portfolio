@@ -1,0 +1,66 @@
+:root {
+  --paper: #ece7de;
+  --ink: #1a1916;
+  --night: #0b0a09;
+  --serif-display: 'Cormorant Garamond', 'Times New Roman', serif;
+  --serif-text: 'Literata', Georgia, serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  /* clip, not hidden: no scroll container, so pinning keeps working */
+  overflow-x: clip;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif-text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+}
+
+img {
+  display: block;
+}
+
+/* code colours on the laptop screen (src/components/screens/code-tokens.js) */
+.tok-tag {
+  color: #e6a27a;
+}
+.tok-attr {
+  color: #b9c48a;
+}
+.tok-str {
+  color: #9cc3c9;
+}
+.tok-kw {
+  color: #c79ad8;
+}
+.tok-fn {
+  color: #e8d48c;
+}
+.tok-num {
+  color: #e6a27a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

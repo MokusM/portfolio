@@ -1,0 +1,21 @@
+{
+  "name": "mokusm-portfolio",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "frames": "node scripts/build-frames.mjs",
+    "measure": "node scripts/measure-screen.mjs"
+  },
+  "dependencies": {
+    "gsap": "^3.12.7",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.6.2",
+    "vite": "^4.5.14"
+  }
+}
