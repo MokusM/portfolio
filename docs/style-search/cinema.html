@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8" />
+<title>Кіно — пошук стилю</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,200;1,200&family=Jost:wght@300;400;500&display=swap" />
+<style>
+  /* «Кіно»: the page stays inside the photo — letterbox, credits, timecode.
+     Static mock, 1440 × 900. */
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { width: 1440px; height: 900px; overflow: hidden; position: relative; background: #070605; color: #efe9df; font-family: 'Jost', sans-serif; }
+  .photo { position: absolute; inset: 64px 0; background: url('../../public/frames/1920/k2.webp') 62% 45% / cover; }
+  .photo::after { content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(7, 6, 5, 0.92) 0%, rgba(7, 6, 5, 0.7) 34%, rgba(7, 6, 5, 0.05) 70%), linear-gradient(0deg, rgba(7, 6, 5, 0.75), transparent 38%); }
+  .bar { position: absolute; left: 0; right: 0; height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 64px;
+    font: 400 11px/1 'Jost'; letter-spacing: 0.32em; text-transform: uppercase; color: rgba(239, 233, 223, 0.75); }
+  .bar.top { top: 0; } .bar.bottom { bottom: 0; }
+  .bar .logo { display: flex; align-items: center; gap: 12px; color: #efe9df; letter-spacing: 0.4em; }
+  .bar .logo svg { height: 18px; fill: currentColor; }
+  .bar ul { display: flex; gap: 44px; margin: 0; padding: 0; list-style: none; }
+  .tc { font-variant-numeric: tabular-nums; letter-spacing: 0.2em; }
+
+  .scene { position: absolute; left: 96px; top: 210px; font: 400 11px/1 'Jost'; letter-spacing: 0.32em; text-transform: uppercase; color: #d9a45e; }
+  h1 { position: absolute; left: 90px; top: 250px; margin: 0; font: italic 200 88px/1.04 'Spectral'; letter-spacing: -0.02em; }
+  .lead { position: absolute; left: 96px; top: 466px; width: 470px; margin: 0; font: 300 18px/1.6 'Jost'; color: rgba(239, 233, 223, 0.82); }
+  .actions { position: absolute; left: 96px; top: 572px; display: flex; gap: 40px; font: 400 12px/1 'Jost'; letter-spacing: 0.28em; text-transform: uppercase; }
+  .actions span { padding-bottom: 10px; border-bottom: 1px solid currentColor; }
+  .actions span:first-child::before { content: '▶'; margin-right: 14px; font-size: 9px; color: #d9a45e; }
+
+  /* cases as stills from the next scenes */
+  .stills { position: absolute; right: 64px; bottom: 96px; display: flex; gap: 14px; }
+  .still { width: 176px; }
+  .still i { display: block; height: 99px; background-size: cover; filter: saturate(0.75) brightness(0.9); outline: 1px solid rgba(239, 233, 223, 0.25); }
+  .still p { margin: 10px 0 0; font: 400 10px/1.5 'Jost'; letter-spacing: 0.24em; text-transform: uppercase; color: rgba(239, 233, 223, 0.7); }
+</style>
+</head>
+<body>
+  <div class="photo"></div>
+  <div class="bar top">
+    <div class="logo"><svg viewBox="0 0 222 299.3"><polygon points="110.8,90.8 0,1.3 0.1,217.2 30.7,195.3 30.9,65.9 111,130.7 222,41 222,1.3" /><polygon points="191.3,105.3 191.1,234.8 111.1,169.9 0,259.7 0,299.3 111.2,209.8 222,299.3 221.9,83.5" /></svg>MOISEIEV</div>
+    <ul><li>Кейси</li><li>Навички</li><li>Контакти</li><li>Написати</li></ul>
+  </div>
+  <p class="scene">Сцена 04 — жива сторінка</p>
+  <h1>Беру макет —<br />віддаю живу сторінку</h1>
+  <p class="lead">Фронтенд-розробник. Верстаю промо-сторінки з анімаціями на Vue 3 і Nuxt. У верстці з 2016 року.</p>
+  <div class="actions"><span>Дивитися кейси</span><span>Обговорити проєкт</span></div>
+  <div class="stills">
+    <div class="still"><i style="background-image:url('../../public/frames/960/k2.webp');background-position:30% 75%"></i><p>Кейс 01 · Промо</p></div>
+    <div class="still"><i style="background-image:url('../../public/frames/960/k1.webp');background-position:60% 20%"></i><p>Кейс 02 · Лендинг</p></div>
+    <div class="still"><i style="background-image:url('../../public/frames/960/k5.webp');background-position:85% 55%"></i><p>Кейс 03 · Спецпроєкт</p></div>
+  </div>
+  <div class="bar bottom"><span class="tc">00:00:41:12</span><span>Портфоліо · 2026</span><span>Сцена 4 / 6</span></div>
+</body>
+</html>

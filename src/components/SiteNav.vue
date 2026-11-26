@@ -20,15 +20,17 @@ import LogoMark from './LogoMark.vue'
 </template>
 
 <style scoped>
+/* Set as film credits, in the middle of the top letterbox bar (--bar, base.css): the
+   padding centres the logo line, max(13px, 0.95cqi) high, in the bar. */
 .site-nav {
   position: relative;
   z-index: 1;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  padding: max(16px, 2.1cqi) max(16px, 4cqi) 0;
-  font: 500 max(11px, 0.78cqi) / 1 var(--mono);
-  letter-spacing: 0.1em;
+  padding: calc((var(--bar) - 1.05 * max(13px, 0.95cqi)) / 2) max(16px, 4cqi) 0;
+  font: 400 max(11px, 0.78cqi) / 1 var(--credits);
+  letter-spacing: 0.3em;
   text-transform: uppercase;
 }
 
@@ -40,10 +42,7 @@ a {
   display: flex;
   align-items: center;
   gap: 0.45em;
-  align-self: center;
-  font: 600 max(21px, 1.65cqi) / 1 var(--serif-display);
-  letter-spacing: 0;
-  text-transform: none;
+  font: 400 max(13px, 0.95cqi) / 1 var(--credits);
 }
 
 .site-nav__mark {
@@ -51,10 +50,9 @@ a {
   height: 1.05em;
 }
 
-/* wordmark in capitals, tracked like the lettering of the old logo */
+/* wordmark in capitals, tracked wide like a film title */
 .site-nav__word {
-  font-size: 0.82em;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.4em;
 }
 
 .site-nav__links {

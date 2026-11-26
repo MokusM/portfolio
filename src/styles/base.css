@@ -1,9 +1,21 @@
+/* «Кіно» (26.11): a dark film page. The names come from the first, light version of the
+   site: --paper is the page colour, --ink the text on it. */
 :root {
-  --paper: #ece7de;
-  --ink: #1a1916;
+  --paper: #0b0a08;
+  --ink: #efe9df;
   --night: #0b0a09;
-  --serif-display: 'Cormorant Garamond', 'Times New Roman', serif;
-  --serif-text: 'Literata', Georgia, serif;
+  /* text over the photo in the scroll scene: always light */
+  --on-photo: #ece7de;
+  /* the lamp's amber: the scene number, the play mark, eyebrows */
+  --accent: #d9a45e;
+  /* the letterbox bar (SiteHero) and the nav set in the middle of it (SiteNav); cqi
+     resolves where it is used, against the hero or the header */
+  --bar: max(52px, 4.6cqi);
+  --serif-display: 'Spectral', Georgia, serif;
+  --serif-text: 'Jost', 'Segoe UI', sans-serif;
+  /* tracked uppercase credits: nav, labels, timecode */
+  --credits: 'Jost', 'Segoe UI', sans-serif;
+  /* a real monospace with a 0.6 em advance: the code editor on the laptop is laid out for it */
   --mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', monospace;
 }
 
@@ -18,6 +30,16 @@ body {
   margin: 0;
   /* clip, not hidden: no scroll container, so pinning keeps working */
   overflow-x: clip;
+}
+
+/* an open case page scrolls on its own: the page behind stops, and its scrollbar
+   goes away without the layout shifting (the gutter stays) */
+html {
+  scrollbar-gutter: stable;
+}
+
+html.case-open {
+  overflow: hidden;
 }
 
 body {

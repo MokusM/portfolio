@@ -36,6 +36,11 @@ import { ui } from '../state.js'
   color: var(--paper);
 }
 
+/* over the photo (not solid) the text stays light whatever the page colours are */
+.site-header:not(.is-solid)[data-header-tone='light'] {
+  color: var(--on-photo);
+}
+
 .site-header.is-solid {
   background-color: var(--paper);
 }

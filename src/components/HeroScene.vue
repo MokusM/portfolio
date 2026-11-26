@@ -11,7 +11,7 @@ import PhoneScreen from './screens/PhoneScreen.vue'
 import SketchCanvas from './SketchCanvas.vue'
 import VideoScrub from './VideoScrub.vue'
 import { FRAME, EXTEND, LAPTOP, PHONE, SHEET, GLOW, DESIGN } from '../scene/geometry.js'
-import { quadToQuad, rectToQuad, toCss } from '../lib/homography.js'
+import { quadToQuad, rectToQuad, toCss, growQuad } from '../lib/homography.js'
 import { ui } from '../state.js'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -33,7 +33,9 @@ const T = {
   zoom: [0.86, 0.985], // the screen fills the browser
   final: [0.975, 1], // hand over to the real page
 }
-const SCROLL_SCREENS = 6
+// Length of the pinned scroll, in screen heights. A swipe on a phone travels about a
+// screen, so with a finger the scene takes half as long as with a mouse wheel (26.11).
+const SCROLL_SCREENS = window.matchMedia('(pointer: coarse)').matches ? 3 : 6
 const STATIC_P = 0.84 // the calm version shows this moment without scrolling
 
 const CHAPTERS = [
@@ -55,10 +57,28 @@ const finalEl = ref(null)
 
 const vp = reactive({ w: window.innerWidth, h: window.innerHeight })
 const portrait = computed(() => vp.w < vp.h)
-// The screen we zoom into gets the viewport's size: at the end of the zoom
-// it maps 1:1 onto the browser, so the hand-over to the real page is invisible.
-const laptopSize = computed(() => (portrait.value ? DESIGN.laptop : { w: vp.w, h: vp.h }))
-const phoneSize = computed(() => (portrait.value ? { w: vp.w, h: vp.h } : DESIGN.phone))
+// The screen we zoom into (phone on portrait screens, laptop otherwise) is as wide as
+// the viewport and, at the end of the zoom, exactly its size: it maps 1:1 onto the
+// browser, so the hand-over to the real page is invisible. Before that it keeps the
+// shape of the glass in the photo, or the page on it would be stretched whenever the
+// viewport is shaped differently (a square window in a tall phone). Its height eases
+// from vp.w / glass to vp.h during the zoom; the page reflows into it (SiteHero
+// spreads into extra height), never distorts.
+const dist = (a, b) => Math.hypot(b[0] - a[0], b[1] - a[1])
+const glassAspect = (q) => (dist(q[0], q[1]) + dist(q[3], q[2])) / (dist(q[0], q[3]) + dist(q[1], q[2]))
+// The lit glass reaches about 1 px past the measured phone edges; zoomed in, that rim
+// of generated screen would show. The page covers 1.5 px more, onto the black bezel.
+const RIM = 1.5
+const PHONE_COVER = growQuad(PHONE, RIM)
+const GLASS = { laptop: glassAspect(LAPTOP), phone: glassAspect(PHONE_COVER) } // ≈ 1.61 and 0.45
+const zoomH = ref(window.innerHeight)
+function zoomScreenHeight(zoomT) {
+  const glass = portrait.value ? GLASS.phone : GLASS.laptop
+  const aspect = glass * Math.pow(vp.w / vp.h / glass, zoomT)
+  return Math.round(vp.w / aspect)
+}
+const laptopSize = computed(() => (portrait.value ? DESIGN.laptop : { w: vp.w, h: zoomH.value }))
+const phoneSize = computed(() => (portrait.value ? { w: vp.w, h: zoomH.value } : DESIGN.phone))
 
 // Smallest set that stays sharp at the closest camera position.
 const frameSet = computed(() => {
@@ -222,10 +242,15 @@ function render(rawP) {
   if (!stage.value || !k2.value || !laptopEl.value) return
   const p = debug.p ?? rawP
   const zoomT = debug.screen ? 1 : props.reduced ? 0 : inOut(seg(p, T.zoom))
+  const screenH = zoomScreenHeight(zoomT)
+  if (screenH !== zoomH.value) {
+    zoomH.value = screenH
+    placeScreens()
+  }
 
   // The whole stage (photo + screens) is one projective transform: it takes the
   // target screen from where "cover" puts it to the full viewport.
-  const target = portrait.value && !debug.screen ? PHONE : LAPTOP
+  const target = portrait.value && !debug.screen ? PHONE_COVER : LAPTOP
   const map = cameraMap(p)
   const view = [[0, 0], [vp.w, 0], [vp.w, vp.h], [0, vp.h]]
   const quad = target.map((pt, i) => {
@@ -270,7 +295,7 @@ function render(rawP) {
     handVideo && liveT > 0 && liveT < 1 && handPhone.length
       ? handPhone[Math.round(liveT * (handPhone.length - 1))]
       : null
-  phoneEl.value.style.transform = toCss(rectToQuad(P.w, P.h, tracked ? tracked.quad : PHONE))
+  phoneEl.value.style.transform = toCss(rectToQuad(P.w, P.h, tracked ? growQuad(tracked.quad, RIM) : PHONE_COVER))
   phoneEl.value.style.opacity = handVideo ? (liveT >= 1 || tracked ? 1 : 0) : liveT
   // a screen that is just waking up is dim, not see-through: darken, never fade,
   // so the generated screen underneath stays covered
@@ -315,9 +340,17 @@ async function layout() {
   if (!root.value) return
   vp.w = root.value.clientWidth
   vp.h = root.value.clientHeight
+  zoomH.value = zoomScreenHeight(0)
   await nextTick()
   // the component may have been unmounted while we waited (hot reload, route change)
   if (!laptopEl.value || !phoneEl.value) return
+  placeScreens()
+  render(props.reduced ? STATIC_P : state.p)
+}
+
+// size both screens and pin them to their glass; render() moves the phone while it
+// is tracked in the V3 video and calls this again when the zoom screen changes height
+function placeScreens() {
   const L = laptopSize.value
   const P = phoneSize.value
   Object.assign(laptopEl.value.style, {
@@ -329,9 +362,8 @@ async function layout() {
     width: `${P.w}px`,
     height: `${P.h}px`,
     borderRadius: `${Math.round(P.w * 0.12)}px`,
-    transform: toCss(rectToQuad(P.w, P.h, PHONE)),
+    transform: toCss(rectToQuad(P.w, P.h, PHONE_COVER)),
   })
-  render(props.reduced ? STATIC_P : state.p)
 }
 
 let resizeTimer = 0
@@ -441,7 +473,7 @@ onBeforeUnmount(() => {
     </div>
 
     <div v-if="!reduced" ref="finalEl" class="scene__final">
-      <SiteHero :with-nav="false" xray />
+      <SiteHero :with-nav="false" live />
     </div>
   </section>
 </template>
@@ -453,7 +485,7 @@ onBeforeUnmount(() => {
   height: 100svh;
   overflow: hidden;
   background: var(--night);
-  color: var(--paper);
+  color: var(--on-photo);
 }
 
 .stage {

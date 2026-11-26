@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8" />
+<title>Креслення — пошук стилю</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" />
+<style>
+  /* «Креслення»: the page shows its own measurements, like a Figma inspect panel
+     printed on drafting paper. Static mock, 1440 × 900. */
+  :root { --ink: #1b1b1a; --red: #e8402c; --blue: #0d99ff; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    width: 1440px; height: 900px; overflow: hidden; position: relative;
+    background-color: #f3f2ee;
+    background-image:
+      linear-gradient(rgba(27, 27, 26, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(27, 27, 26, 0.05) 1px, transparent 1px),
+      linear-gradient(rgba(27, 27, 26, 0.022) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(27, 27, 26, 0.022) 1px, transparent 1px);
+    background-size: 48px 48px, 48px 48px, 8px 8px, 8px 8px;
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+  .cols { position: absolute; inset: 0 96px; display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; pointer-events: none; }
+  .cols i { background: rgba(232, 64, 44, 0.045); }
+
+  nav { position: absolute; top: 40px; left: 96px; right: 96px; display: flex; justify-content: space-between; align-items: center;
+    font: 500 12px/1 'IBM Plex Mono', monospace; letter-spacing: 0.08em; text-transform: uppercase; }
+  nav .logo { display: flex; align-items: center; gap: 10px; font: 500 17px/1 'IBM Plex Sans'; letter-spacing: 0.16em; }
+  nav .logo svg { height: 20px; fill: currentColor; }
+  nav ul { display: flex; gap: 40px; margin: 0; padding: 0; list-style: none; }
+
+  .frame-name { position: absolute; top: 96px; left: 96px; font: 400 11px/1 'IBM Plex Mono'; color: var(--blue); }
+
+  h1 { position: absolute; left: 96px; top: 190px; margin: 0; font-weight: 300; font-size: 112px; line-height: 1; letter-spacing: -0.035em; }
+  /* dimension lines */
+  .dim { position: absolute; font: 400 11px/1 'IBM Plex Mono'; color: var(--red); }
+  .dim-v { left: 70px; top: 196px; height: 212px; border-left: 1px solid var(--red); }
+  .dim-v::before, .dim-v::after { content: ''; position: absolute; left: -5px; width: 9px; border-top: 1px solid var(--red); }
+  .dim-v::before { top: 0; } .dim-v::after { bottom: 0; }
+  .dim-v span { position: absolute; top: 50%; left: -14px; transform: translate(-100%, -50%) rotate(-90deg); transform-origin: right center; white-space: nowrap; }
+  .dim-h { left: 96px; top: 168px; width: 1002px; border-top: 1px solid var(--red); }
+  .dim-h::before, .dim-h::after { content: ''; position: absolute; top: -5px; height: 9px; border-left: 1px solid var(--red); }
+  .dim-h::before { left: 0; } .dim-h::after { right: 0; }
+  .dim-h span { position: absolute; left: 50%; top: -16px; transform: translateX(-50%); background: #f3f2ee; padding: 0 6px; }
+
+  .lead { position: absolute; left: 96px; top: 460px; width: 520px; margin: 0; font-size: 19px; line-height: 1.55; }
+  .actions { position: absolute; left: 96px; top: 576px; display: flex; gap: 16px; }
+  .btn { padding: 19px 28px; border: 1px solid var(--ink); font: 500 12px/1 'IBM Plex Mono'; letter-spacing: 0.08em; text-transform: uppercase; }
+  .btn.solid { background: var(--ink); color: #f3f2ee; }
+  .sel { position: absolute; left: 92px; top: 572px; width: 213px; height: 59px; border: 1px solid var(--blue); }
+  .sel i { position: absolute; width: 7px; height: 7px; background: #fff; border: 1px solid var(--blue); }
+  .sel i:nth-child(1) { left: -4px; top: -4px; } .sel i:nth-child(2) { right: -4px; top: -4px; }
+  .sel i:nth-child(3) { left: -4px; bottom: -4px; } .sel i:nth-child(4) { right: -4px; bottom: -4px; }
+  .sel b { position: absolute; left: 50%; bottom: -24px; transform: translateX(-50%); background: var(--blue); color: #fff; font: 500 10px/1 'IBM Plex Mono'; padding: 4px 6px; white-space: nowrap; }
+
+  /* inspect panel on the right: what the selected heading is made of */
+  .inspect { position: absolute; right: 96px; top: 460px; width: 330px; font: 400 12px/1 'IBM Plex Mono'; }
+  .inspect h2 { margin: 0 0 14px; font: 500 11px/1 'IBM Plex Mono'; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.55; }
+  .inspect dl { display: grid; grid-template-columns: 110px 1fr; row-gap: 11px; margin: 0 0 24px; }
+  .inspect dt { opacity: 0.55; } .inspect dd { margin: 0; }
+  .inspect .sw { display: inline-block; width: 10px; height: 10px; margin-right: 6px; vertical-align: -1px; background: var(--ink); }
+
+  table { position: absolute; left: 96px; right: 96px; bottom: 56px; width: calc(100% - 192px); border-collapse: collapse; font: 400 13px/1 'IBM Plex Mono'; }
+  th { text-align: left; font-weight: 500; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.55; padding: 0 0 10px; border-bottom: 1px solid var(--ink); }
+  td { padding: 14px 0; border-bottom: 1px solid rgba(27, 27, 26, 0.2); }
+  td.name { font: 400 17px/1 'IBM Plex Sans'; }
+  td.st { color: var(--red); }
+</style>
+</head>
+<body>
+  <div class="cols"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <nav>
+    <div class="logo"><svg viewBox="0 0 222 299.3"><polygon points="110.8,90.8 0,1.3 0.1,217.2 30.7,195.3 30.9,65.9 111,130.7 222,41 222,1.3" /><polygon points="191.3,105.3 191.1,234.8 111.1,169.9 0,259.7 0,299.3 111.2,209.8 222,299.3 221.9,83.5" /></svg>MOISEIEV</div>
+    <ul><li>Кейси</li><li>Навички</li><li>Контакти</li><li>Написати</li></ul>
+  </nav>
+  <p class="frame-name">Перший екран · 1440 × 900</p>
+  <div class="dim dim-h"><span>W 1002 · Hug</span></div>
+  <div class="dim dim-v"><span>H 212 · 2 рядки × 112</span></div>
+  <h1>Беру макет —<br />віддаю живу сторінку</h1>
+  <p class="lead">Фронтенд-розробник. Верстаю промо-сторінки з анімаціями на Vue 3 і Nuxt. У верстці з 2016 року.</p>
+  <div class="actions"><span class="btn solid">Дивитися кейси</span><span class="btn">Обговорити проєкт</span></div>
+  <div class="sel"><i></i><i></i><i></i><i></i><b>Кнопка · 213 × 59</b></div>
+  <aside class="inspect">
+    <h2>Заголовок · H1</h2>
+    <dl>
+      <dt>Шрифт</dt><dd>IBM Plex Sans Light</dd>
+      <dt>Розмір</dt><dd>112 / 112 · −3,5 %</dd>
+      <dt>Колір</dt><dd><span class="sw"></span>1B1B1A</dd>
+      <dt>Сітка</dt><dd>12 колонок · 24 · поля 96</dd>
+    </dl>
+  </aside>
+  <table>
+    <tr><th style="width:8%">№</th><th style="width:30%">Проєкт</th><th style="width:22%">Тип</th><th style="width:28%">Стек</th><th>Статус</th></tr>
+    <tr><td>01</td><td class="name">Назва проєкту</td><td>Промо-сторінка</td><td>Vue 3 · GSAP · ScrollTrigger</td><td class="st">скоро</td></tr>
+    <tr><td>02</td><td class="name">Назва проєкту</td><td>Лендинг</td><td>Nuxt · GSAP</td><td class="st">скоро</td></tr>
+  </table>
+</body>
+</html>

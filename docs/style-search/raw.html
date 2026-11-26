@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8" />
+<title>Сирий HTML — пошук стилю</title>
+<style>
+  /* «Сирий HTML»: the browser's own defaults on purpose — Times, blue underlined
+     links, grey buttons — plus tag names in the margin, as devtools show them.
+     The polish lives in the photo scene above; the page is "code as it is".
+     Static mock, 1440 × 900. */
+  html, body { margin: 0; }
+  body { width: 1440px; height: 900px; overflow: hidden; position: relative; background: #fff; color: #000; font-family: 'Times New Roman', Times, serif; }
+  .wrap { position: absolute; left: 160px; top: 0; right: 120px; }
+  .tag { position: absolute; left: -110px; letter-spacing: 0; font-weight: normal; width: 90px; text-align: right; font: 12px/1 'Courier New', monospace; color: #a31515; }
+  a { color: #0000ee; }
+  a.visited { color: #551a8b; }
+  header { position: relative; padding: 28px 0 0; font-size: 18px; }
+  header b { font-size: 22px; letter-spacing: 0.02em; }
+  header nav { float: right; }
+  header nav a { margin-left: 22px; }
+  hr { margin: 22px 0 0; }
+  h1 { position: relative; margin: 74px 0 0; font-size: 128px; line-height: 0.98; font-weight: bold; letter-spacing: -0.03em; }
+  p.lead { position: relative; max-width: 640px; margin: 34px 0 0; font-size: 22px; line-height: 1.4; }
+  .actions { position: relative; margin-top: 26px; }
+  button { font: 15px Arial, sans-serif; padding: 6px 14px; margin-right: 8px; }
+  h2 { position: relative; margin: 62px 0 10px; font-size: 24px; }
+  ol { position: relative; margin: 0; padding-left: 28px; font-size: 20px; line-height: 1.6; }
+  code { font: 15px 'Courier New', monospace; color: #555; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header><span class="tag">&lt;header&gt;</span><b>MOISEIEV</b><nav><a href="#">Кейси</a> <a href="#">Навички</a> <a href="#">Контакти</a> <a class="visited" href="#">Написати</a></nav></header>
+    <hr />
+    <h1><span class="tag" style="top: 14px">&lt;h1&gt;</span>Беру макет —<br />віддаю живу сторінку</h1>
+    <p class="lead"><span class="tag" style="top: 6px">&lt;p&gt;</span>Фронтенд-розробник. Верстаю промо-сторінки з анімаціями на <a href="#">Vue&nbsp;3</a> і <a href="#">Nuxt</a>. У верстці з 2016 року.</p>
+    <div class="actions"><span class="tag" style="top: 8px">&lt;button&gt;</span><button>Дивитися кейси</button><button>Обговорити проєкт</button></div>
+    <h2><span class="tag" style="top: 6px">&lt;h2&gt;</span>Кейси</h2>
+    <ol>
+      <span class="tag" style="top: 6px">&lt;ol&gt;</span>
+      <li><a href="#">Промо-сторінка</a> — скоро <code>vue 3, gsap, scrolltrigger</code></li>
+      <li><a href="#">Лендинг</a> — скоро <code>nuxt, gsap</code></li>
+      <li><a href="#">Спецпроєкт</a> — скоро <code>vue 3, pixi.js</code></li>
+    </ol>
+  </div>
+</body>
+</html>

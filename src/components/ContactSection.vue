@@ -20,7 +20,9 @@ const EMAIL = 'moceevmukola@gmail.com'
 </script>
 
 <template>
-  <section class="contact" data-tone="light">
+  <!-- the closing credits sit on the page colour, so the header reads them as a paper
+       section ("dark" tone: ink text on the page colour) -->
+  <section class="contact" data-tone="dark">
     <div id="about" class="contact__block contact__about">
       <p class="contact__eyebrow">Про мене</p>
       <p class="contact__lead">
@@ -104,7 +106,7 @@ const EMAIL = 'moceevmukola@gmail.com'
   align-items: baseline;
   gap: 14px;
   padding-top: 14px;
-  border-top: 1px solid rgba(236, 231, 222, 0.16);
+  border-top: 1px solid color-mix(in srgb, var(--paper) 16%, transparent);
 }
 
 .contact__facts b {
@@ -169,7 +171,7 @@ const EMAIL = 'moceevmukola@gmail.com'
   justify-content: space-between;
   gap: 24px;
   padding-top: clamp(40px, 5vw, 72px);
-  border-top: 1px solid rgba(236, 231, 222, 0.16);
+  border-top: 1px solid color-mix(in srgb, var(--paper) 16%, transparent);
 }
 
 .contact__brand {
@@ -193,5 +195,131 @@ const EMAIL = 'moceevmukola@gmail.com'
   letter-spacing: 0.14em;
   text-transform: uppercase;
   opacity: 0.55;
+}
+
+/* ───────── «Кіно»: the closing credits (these rules override the ones above) ─────────
+   Dark page, one centred column: the role on the left, the name on the right, as
+   film credits are set; the contact is the last, biggest card; the logo closes it. */
+
+.contact {
+  display: block;
+  padding: clamp(120px, 14vw, 220px) max(16px, 4vw) clamp(48px, 6vw, 88px);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.contact__block {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: clamp(24px, 3vw, 48px);
+  align-items: baseline;
+  max-width: 920px;
+  margin: 0 auto clamp(72px, 8vw, 120px);
+}
+
+.contact__block > * {
+  grid-column: 2;
+}
+
+.contact__eyebrow {
+  grid-column: 1;
+  grid-row: 1 / span 4;
+  align-self: start;
+  padding-top: 0.5em;
+  color: var(--accent);
+  font: 400 12px / 1.4 var(--credits);
+  letter-spacing: 0.32em;
+  text-align: right;
+  opacity: 1;
+}
+
+.contact__lead {
+  margin-top: 0 !important;
+  font-weight: 300;
+}
+
+.contact__facts li {
+  border-top-color: color-mix(in srgb, var(--ink) 14%, transparent);
+}
+
+.contact__facts b,
+.contact__skills,
+.contact__title {
+  font-style: italic;
+  font-weight: 200;
+}
+
+.contact__facts span,
+.contact__links,
+.contact__sign p {
+  font-family: var(--credits);
+  font-weight: 400;
+  letter-spacing: 0.26em;
+}
+
+.contact__skills {
+  margin-top: 0;
+}
+
+/* the contact: centred, the biggest card */
+#contact {
+  display: block;
+  text-align: center;
+}
+
+#contact .contact__eyebrow {
+  padding: 0;
+  text-align: center;
+}
+
+.contact__title {
+  margin-top: 0.3em !important;
+  font-size: clamp(48px, 6.4vw, 112px);
+  letter-spacing: -0.02em;
+}
+
+.contact__mail {
+  font-weight: 300;
+}
+
+.contact__links {
+  justify-content: center;
+}
+
+.contact__sign {
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  border-top-color: color-mix(in srgb, var(--ink) 14%, transparent);
+}
+
+.contact__brand {
+  align-items: center;
+}
+
+.contact__word {
+  font: 400 clamp(20px, 2.2vw, 32px) / 1 var(--credits);
+  letter-spacing: 0.5em;
+}
+
+.contact__logo {
+  height: clamp(36px, 3.6vw, 56px);
+}
+
+@media (max-width: 640px) {
+  .contact__block {
+    grid-template-columns: 1fr;
+  }
+
+  .contact__block > *,
+  .contact__eyebrow {
+    grid-column: 1;
+    grid-row: auto;
+    text-align: left;
+  }
+
+  .contact__eyebrow {
+    margin-bottom: 18px;
+  }
 }
 </style>

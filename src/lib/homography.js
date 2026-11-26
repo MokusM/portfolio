@@ -55,6 +55,25 @@ export function rectToQuad(w, h, dst) {
   return multiply(squareToQuad(dst), [1 / w, 0, 0, 0, 1 / h, 0, 0, 0, 1])
 }
 
+// Quad [tl, tr, br, bl] with every edge moved `d` px outward (corners where the
+// moved edges meet).
+export function growQuad(q, d) {
+  const lines = q.map((a, i) => {
+    const b = q[(i + 1) % 4]
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1])
+    // clockwise on screen (y down), so the outward normal is (dy, -dx)
+    const n = [(b[1] - a[1]) / len, -(b[0] - a[0]) / len]
+    return { p: [a[0] + n[0] * d, a[1] + n[1] * d], v: [b[0] - a[0], b[1] - a[1]] }
+  })
+  return q.map((_, i) => {
+    const A = lines[(i + 3) % 4] // edge ending at corner i
+    const B = lines[i] // edge starting at corner i
+    const den = A.v[0] * B.v[1] - A.v[1] * B.v[0]
+    const t = ((B.p[0] - A.p[0]) * B.v[1] - (B.p[1] - A.p[1]) * B.v[0]) / den
+    return [A.p[0] + A.v[0] * t, A.p[1] + A.v[1] * t]
+  })
+}
+
 // CSS matrix3d (column-major), to be used with transform-origin: 0 0.
 export function toCss(m) {
   const k = 1 / m[8]

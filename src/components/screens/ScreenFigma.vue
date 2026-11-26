@@ -131,11 +131,12 @@ watch(() => [props.w, props.h], () => nextTick(measure))
         <span>H</span><b>{{ Math.round(box.h) }}</b>
       </div>
       <p class="figma__heading">Заповнення</p>
-      <div class="figma__fill"><i style="background: #ece7de" />ECE7DE</div>
-      <div class="figma__fill"><i style="background: #1a1916" />1A1916</div>
+      <div class="figma__fill"><i style="background: #0b0a08" />0B0A08</div>
+      <div class="figma__fill"><i style="background: #efe9df" />EFE9DF</div>
+      <div class="figma__fill"><i style="background: #d9a45e" />D9A45E</div>
       <p class="figma__heading">Текст</p>
-      <p class="figma__muted">Cormorant Garamond · 500</p>
-      <p class="figma__muted">Literata · 400</p>
+      <p class="figma__muted">Spectral · ExtraLight Italic</p>
+      <p class="figma__muted">Jost · Light</p>
     </aside>
   </div>
 </template>
