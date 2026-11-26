@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "frames": "node scripts/build-frames.mjs",
     "sketch": "node scripts/build-sketch.mjs",
-    "measure": "node scripts/measure-screen.mjs"
+    "measure": "node scripts/measure-screen.mjs",
+    "extend": "node scripts/build-extension.mjs"
   },
   "dependencies": {
     "gsap": "^3.12.7",

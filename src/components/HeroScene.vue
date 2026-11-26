@@ -10,7 +10,7 @@ import LaptopScreen from './screens/LaptopScreen.vue'
 import PhoneScreen from './screens/PhoneScreen.vue'
 import SketchCanvas from './SketchCanvas.vue'
 import VideoScrub from './VideoScrub.vue'
-import { FRAME, LAPTOP, PHONE, SHEET, FOCUS, GLOW, DESIGN } from '../scene/geometry.js'
+import { FRAME, EXTEND, LAPTOP, PHONE, SHEET, GLOW, DESIGN } from '../scene/geometry.js'
 import { quadToQuad, rectToQuad, toCss } from '../lib/homography.js'
 import { ui } from '../state.js'
 
@@ -62,10 +62,16 @@ const phoneSize = computed(() => (portrait.value ? { w: vp.w, h: vp.h } : DESIGN
 
 // Smallest set that stays sharp at the closest camera position.
 const frameSet = computed(() => {
-  const need = FRAME.w * closeUpScale() * (window.devicePixelRatio || 1)
+  const closest = portrait.value ? Math.min(SHOTS.laptop().w, SHOTS.phone().w) : SHOTS.close().w
+  const need = FRAME.w * (vp.w / closest) * (window.devicePixelRatio || 1)
   return need <= 960 ? 960 : need <= 1920 ? 1920 : 2736
 })
 const frameSrc = (name) => `${import.meta.env.BASE_URL}frames/${frameSet.value}/${name}.webp`
+
+const stripStyle = {
+  top: { top: `${-EXTEND.top}px`, height: `${EXTEND.top + EXTEND.overlap}px` },
+  bottom: { top: `${FRAME.h - EXTEND.overlap}px`, height: `${EXTEND.bottom + EXTEND.overlap}px` },
+}
 
 const glowStyle = {
   left: `${GLOW.x}px`,
@@ -123,61 +129,68 @@ function sketchMask(t) {
   return `linear-gradient(${angleDeg}deg, #000 ${edge - FEATHER}px, transparent ${edge}px)`
 }
 
-// Portrait screens see a slice of the frame: the camera pans sheet -> laptop -> phone.
-function focusX(p) {
-  if (!portrait.value) return null
-  const x = lerp(FOCUS.sheet, FOCUS.laptop, inOut(seg(p, [0.34, 0.44])))
-  return lerp(x, FOCUS.phone, inOut(seg(p, [0.72, 0.82])))
-}
-
-// Frame -> viewport, "cover" fit.
-function coverMap(fx) {
-  const s = Math.max(vp.w / FRAME.w, vp.h / FRAME.h)
-  let tx = (vp.w - FRAME.w * s) / 2
-  if (fx != null) tx = Math.min(0, Math.max(vp.w - FRAME.w * s, vp.w / 2 - fx * s))
-  const ty = (vp.h - FRAME.h * s) / 2
-  return ([x, y]) => [x * s + tx, y * s + ty]
-}
-
-// Close-up on the laptop for chapters 02–03: a plain zoom (scale + move, no warping),
-// the screen about 46% of the viewport wide, the photo still covering every edge.
-// There is little wall above the laptop, so on wide screens it sits in the upper half.
-const CLOSE = {
-  landscape: { width: 0.46, x: 0.58, y: 0.5 },
-  portrait: { width: 0.96, x: 0.5, y: 0.42 },
-}
+// The camera is the part of the stage the viewport shows: a rectangle in frame
+// pixels, { x, y, w }, its height set by the viewport's shape. A shot says what to
+// frame; moving between shots interpolates the rectangle (the width geometrically,
+// so a zoom feels even). The stage reaches past the photo by the wall and floor
+// strips (EXTEND); a rectangle never leaves it, so the picture covers every edge.
+const STAGE = { top: -EXTEND.top, bottom: FRAME.h + EXTEND.bottom }
+const centreOf = (q) => [q.reduce((s, p) => s + p[0], 0) / q.length, q.reduce((s, p) => s + p[1], 0) / q.length]
 const LAPTOP_TOP = Math.hypot(LAPTOP[1][0] - LAPTOP[0][0], LAPTOP[1][1] - LAPTOP[0][1])
-const LAPTOP_CENTRE = [
-  LAPTOP.reduce((s, p) => s + p[0], 0) / 4,
-  LAPTOP.reduce((s, p) => s + p[1], 0) / 4,
-]
+const LAPTOP_CENTRE = centreOf(LAPTOP)
+const PHONE_CENTRE = centreOf(PHONE)
+const SHEET_CENTRE = centreOf([SHEET.tl, SHEET.tr, SHEET.br, SHEET.bl])
 
-function closeUpScale() {
-  const c = portrait.value ? CLOSE.portrait : CLOSE.landscape
-  return Math.max(vp.w / FRAME.w, vp.h / FRAME.h, (vp.w * c.width) / LAPTOP_TOP)
+// `focus` (frame px) lands at `view` (fractions of the viewport), `width` frame px across
+function shot(focus, view, width) {
+  const aspect = vp.h / vp.w
+  const w = Math.min(width, FRAME.w, (STAGE.bottom - STAGE.top) / aspect)
+  const h = w * aspect
+  return {
+    x: Math.min(FRAME.w - w, Math.max(0, focus[0] - view[0] * w)),
+    y: Math.min(STAGE.bottom - h, Math.max(STAGE.top, focus[1] - view[1] * h)),
+    w,
+  }
 }
 
-function closeUpMap() {
-  const c = portrait.value ? CLOSE.portrait : CLOSE.landscape
-  const k = closeUpScale()
-  const tx = Math.min(0, Math.max(vp.w - FRAME.w * k, vp.w * c.x - LAPTOP_CENTRE[0] * k))
-  const ty = Math.min(0, Math.max(vp.h - FRAME.h * k, vp.h * c.y - LAPTOP_CENTRE[1] * k))
-  return ([x, y]) => [x * k + tx, y * k + ty]
+// Landscape: the whole photo, "cover" fit, then a close-up on the laptop for
+// chapters 02–03 with the screen about 46% of the viewport wide. The wall strip
+// lets the screen sit in the middle of the viewport, not pressed to its top.
+function wideShot() {
+  const aspect = vp.h / vp.w
+  const w = Math.min(FRAME.w, FRAME.h / aspect)
+  return { x: (FRAME.w - w) / 2, y: (FRAME.h - w * aspect) / 2, w }
+}
+const SHOTS = {
+  close: () => shot(LAPTOP_CENTRE, [0.58, 0.5], LAPTOP_TOP / 0.46),
+  // Portrait: the camera frames one thing at a time, in the upper part of the
+  // screen, with the captions below it over the desk front and the floor.
+  intro: () => shot([1420, 780], [0.5, 0.42], 1700), // the whole desk, as wide as fits
+  sheet: () => shot(SHEET_CENTRE, [0.5, 0.4], 1080),
+  laptop: () => shot(LAPTOP_CENTRE, [0.5, 0.42], LAPTOP_TOP / 0.96),
+  phone: () => shot(PHONE_CENTRE, [0.5, 0.42], 920),
+}
+
+function mix(a, b, t) {
+  if (t <= 0) return a
+  if (t >= 1) return b
+  return { x: lerp(a.x, b.x, t), y: lerp(a.y, b.y, t), w: a.w * Math.pow(b.w / a.w, t) }
 }
 
 const pushAt = (p) => inOut(seg(p, T.push)) * (1 - inOut(seg(p, T.pull)))
 
-// Where the camera is: between the whole desk and the laptop close-up.
+function cameraRect(p) {
+  if (!portrait.value) return mix(wideShot(), SHOTS.close(), props.reduced ? 0 : pushAt(p))
+  let r = mix(SHOTS.intro(), SHOTS.sheet(), inOut(seg(p, [0.02, 0.1])))
+  r = mix(r, SHOTS.laptop(), inOut(seg(p, T.push)))
+  return mix(r, SHOTS.phone(), inOut(seg(p, [0.72, 0.8])))
+}
+
+// frame -> viewport
 function cameraMap(p) {
-  const wide = coverMap(focusX(p))
-  const push = props.reduced ? 0 : pushAt(p)
-  if (push === 0) return wide
-  const close = closeUpMap()
-  return (pt) => {
-    const [ax, ay] = wide(pt)
-    const [bx, by] = close(pt)
-    return [lerp(ax, bx, push), lerp(ay, by, push)]
-  }
+  const r = cameraRect(p)
+  const s = vp.w / r.w
+  return ([x, y]) => [(x - r.x) * s, (y - r.y) * s]
 }
 
 const state = { p: 0 }
@@ -384,6 +397,10 @@ onBeforeUnmount(() => {
         @ready="onHandReady"
         @unsupported="hand.failed = true"
       />
+      <!-- wall above and floor below the photo, over the frames and the video, whose
+           edge rows they crossfade into -->
+      <img class="strip" :src="frameSrc('top')" alt="" decoding="async" :style="stripStyle.top" />
+      <img class="strip" :src="frameSrc('bottom')" alt="" decoding="async" :style="stripStyle.bottom" />
       <div ref="glow" class="glow" :style="glowStyle" />
       <div ref="laptopEl" class="screen" inert>
         <LaptopScreen
@@ -458,6 +475,14 @@ onBeforeUnmount(() => {
 
 .frame--k5 {
   opacity: 0;
+}
+
+.strip {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  user-select: none;
+  pointer-events: none;
 }
 
 .glow {

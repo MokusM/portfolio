@@ -3,6 +3,12 @@
 
 export const FRAME = { w: 2736, h: 1536 }
 
+// Wall above and floor below the photo (outpainted K1, scripts/build-extension.mjs),
+// so the camera can frame the scene taller than 16:9: portrait screens and the laptop
+// close-up. Stage coordinates: the top strip starts at y = -top. Each strip reaches
+// `overlap` px into the photo, where it crossfades into it.
+export const EXTEND = { top: 942, bottom: 942, overlap: 40 }
+
 // Laptop display area: measured on the K2 -> K3 difference
 //   npm run measure -- diff frames/test/k2-flux-sketch-no-letters.png frames/test/k3-flux-figma.png 1250 20 900 620 8
 export const LAPTOP = [
@@ -36,9 +42,6 @@ export const SKETCH_BOX = { x: 620, y: 795, w: 890, h: 640 }
 // The part of the frame that moves in the V3 video (hand picks up the phone);
 // scripts/build-video.mjs keeps only this box, the photos show the rest.
 export const VIDEO_BOX = { x: 1800, y: 600, w: 936, h: 936 }
-
-// Horizontal focus points for portrait screens, where only a slice of the frame fits.
-export const FOCUS = { sheet: 1060, laptop: 1690, phone: 2166 }
 
 // Area that catches the laptop screen light: keyboard and bottom bezel.
 export const GLOW = { x: 1164, y: 470, w: 900, h: 400 }
