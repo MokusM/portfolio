@@ -7,6 +7,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import SiteHero from './SiteHero.vue'
 import LaptopScreen from './screens/LaptopScreen.vue'
+import PhoneScreen from './screens/PhoneScreen.vue'
 import SketchCanvas from './SketchCanvas.vue'
 import VideoScrub from './VideoScrub.vue'
 import { FRAME, LAPTOP, PHONE, SHEET, FOCUS, GLOW, DESIGN } from '../scene/geometry.js'
@@ -73,14 +74,18 @@ const glowStyle = {
   height: `${GLOW.h}px`,
 }
 
-const screen = reactive({ layer: 0, codeT: 0, liveIn: 0 })
+const screen = reactive({ layer: 0, codeT: 0, liveIn: 0, phoneChrome: 1 })
 // stroke-by-stroke drawing (SketchCanvas); until it is ready, or without WebGL,
 // the sketch comes in as a soft wipe down the sheet instead
 const sketch = reactive({ t: 0, visible: true, ready: false, failed: false })
 // the hand picking up the phone (VideoScrub, V3); until its frames are in, or if they
 // are missing, K2 -> K5 is a plain crossfade
 const hand = reactive({ t: 0, visible: false, ready: false, failed: false, load: false })
-function onHandReady() {
+// where the phone's lit screen is in each video frame (scripts/build-video.mjs), so the
+// live page rides on it while it settles in the hand; plain array, not reactive
+let handPhone = []
+function onHandReady(manifest) {
+  handPhone = manifest?.phone ?? []
   hand.ready = true
   render(state.p)
 }
@@ -245,10 +250,23 @@ function render(rawP) {
   const wake = seg(p, T.wake)
   laptopEl.value.style.opacity = wake
   laptopEl.value.style.setProperty('--glare', 1 - zoomT)
-  // the phone's screen comes alive once it has settled in the hand (≈80% of V3;
-  // before that it still moves and the live page could not stay on it)
-  phoneEl.value.style.opacity = handVideo ? seg(liveT, [0.78, 0.9]) : liveT
+  // During V3 the live page sits on the phone's screen as tracked in each frame and
+  // lights up with it, so the generated screen never shows; afterwards it is K5's.
+  const P = phoneSize.value
+  const tracked =
+    handVideo && liveT > 0 && liveT < 1 && handPhone.length
+      ? handPhone[Math.round(liveT * (handPhone.length - 1))]
+      : null
+  phoneEl.value.style.transform = toCss(rectToQuad(P.w, P.h, tracked ? tracked.quad : PHONE))
+  phoneEl.value.style.opacity = handVideo ? (liveT >= 1 || tracked ? 1 : 0) : liveT
+  // a screen that is just waking up is dim, not see-through: darken, never fade,
+  // so the generated screen underneath stays covered
+  phoneEl.value.style.filter =
+    tracked && tracked.light < 1 ? `brightness(${0.3 + 0.7 * tracked.light})` : 'none'
   phoneEl.value.style.setProperty('--glare', 1 - zoomT)
+  // zooming into the phone (portrait), its status bar folds away so the screen
+  // ends up exactly as the page underneath
+  screen.phoneChrome = portrait.value ? 1 - seg(zoomT, [0.45, 0.9]) : 1
 
   screen.layer = Math.min(FIGMA_LAYERS - 1, Math.floor(seg(p, T.figma) * FIGMA_LAYERS))
   screen.codeT = seg(p, T.code)
@@ -377,7 +395,7 @@ onBeforeUnmount(() => {
         />
       </div>
       <div ref="phoneEl" class="screen screen--phone" inert>
-        <SiteHero />
+        <PhoneScreen :w="phoneSize.w" :h="phoneSize.h" :chrome="screen.phoneChrome" />
       </div>
     </div>
 

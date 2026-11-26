@@ -6,19 +6,19 @@ export const FRAME = { w: 2736, h: 1536 }
 // Laptop display area: measured on the K2 -> K3 difference
 //   npm run measure -- diff frames/test/k2-flux-sketch-no-letters.png frames/test/k3-flux-figma.png 1250 20 900 620 8
 export const LAPTOP = [
-  [1364.8, 68.8],
-  [2081.1, 149.7],
-  [2016.9, 600.1],
-  [1318.3, 498.2],
+  [1363.4, 67.6],
+  [2080.7, 149.4],
+  [2021.3, 601.2],
+  [1317.7, 498.6],
 ]
 
-// Phone screen in the hand, K5 (variant B):
+// Phone glass in the hand, K5 (variant B), notch and status bar row included:
 //   npm run measure -- bright frames/test/k5-flux-hand-b.png 1960 680 420 500 150
 export const PHONE = [
-  [2006.1, 770.9],
-  [2176.7, 714.0],
-  [2326.6, 1090.1],
-  [2146.5, 1143.1],
+  [1998.3, 752.1],
+  [2173.6, 705.8],
+  [2327.3, 1090.4],
+  [2146.4, 1143.5],
 ]
 
 // Sheet of paper (approximate, for the sketch reveal direction).

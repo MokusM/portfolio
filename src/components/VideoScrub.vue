@@ -18,9 +18,12 @@ let frames = []
 let drawn = -1
 let alive = true
 
+// frame shown for t — HeroScene uses the same rule to pick the phone's tracked screen
+const frameAt = (t, n) => Math.round(t * (n - 1))
+
 function draw() {
   if (!ctx || !frames.length) return
-  const i = Math.round(props.t * (frames.length - 1))
+  const i = frameAt(props.t, frames.length)
   if (i === drawn) return
   ctx.drawImage(frames[i], 0, 0, canvas.value.width, canvas.value.height)
   drawn = i
@@ -56,7 +59,8 @@ async function start() {
     ctx = canvas.value.getContext('2d')
     frames = imgs
     draw()
-    emit('ready')
+    // manifest.phone[i]: the lit phone screen in frame i ({ quad, light }) or null
+    emit('ready', manifest)
   } catch (err) {
     if (import.meta.env.DEV) console.warn('[VideoScrub] falling back to a crossfade:', err)
     emit('unsupported', err)
